@@ -4,7 +4,7 @@ import { Loader } from "lucide-react";
 import { Loader as GoogleMapsLoader } from "@googlemaps/js-api-loader";
 
 // Google Maps API Key
-const API_KEY = "AIzaSyBV0FjCFAgeewu0CDChee_WrM6SJ69OGmE";
+const API_KEY = "AIzaSyD5jIwHOXztPMnJ2vSaeLtcvsDOaU9kIbc";
 
 interface PropertyMapProps {
   properties: Property[];
