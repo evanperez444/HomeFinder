@@ -14,6 +14,7 @@ import Home from "./pages/Home";
 import BuyRent from "./pages/BuyRent";
 import Sell from "./pages/Sell";
 import PropertyDetails from "./pages/PropertyDetails";
+import ChatAssistant from "./pages/ChatAssistant";
 import NotFound from "./pages/not-found";
 
 function Router() {
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/rent" component={() => <BuyRent listingType="rent" />} />
       <Route path="/sell" component={Sell} />
       <Route path="/properties/:id" component={PropertyDetails} />
+      <Route path="/assistant" component={ChatAssistant} />
       <Route component={NotFound} />
     </Switch>
   );

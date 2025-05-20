@@ -59,6 +59,10 @@ const Navbar = () => {
                 <Link href="/sell" className={`text-dark hover:text-primary font-medium ${location === '/sell' ? 'text-primary' : ''}`}>
                   Sell
                 </Link>
+                <Link href="/assistant" className={`text-dark hover:text-primary font-medium flex items-center ${location === '/assistant' ? 'text-primary' : ''}`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                  Assistant
+                </Link>
               </nav>
             </div>
             <div className="flex items-center space-x-4">

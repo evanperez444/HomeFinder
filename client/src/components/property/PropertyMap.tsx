@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Property } from "@shared/schema";
-import { MapPin, Navigation, ExternalLink } from "lucide-react";
-import { formatPrice } from "@/utils/formatters";
+import { Loader } from "lucide-react";
+import { Loader as GoogleMapsLoader } from "@googlemaps/js-api-loader";
+
+// Google Maps API Key
+const API_KEY = "AIzaSyBV0FjCFAgeewu0CDChee_WrM6SJ69OGmE";
 
 interface PropertyMapProps {
   properties: Property[];
@@ -12,77 +15,162 @@ interface PropertyMapProps {
 
 const PropertyMap = ({ 
   properties, 
-  height = "500px"
+  height = "500px",
+  center = null,
+  zoom = 15
 }: PropertyMapProps) => {
-  const [mapError] = useState(false);
-
-  // Function to get Google Maps URL for a property
-  const getGoogleMapsUrl = (property: Property) => {
-    const address = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`;
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const mapInstanceRef = useRef<google.maps.Map | null>(null);
+  const markersRef = useRef<google.maps.Marker[]>([]);
+  
+  // Clean up function to remove all markers
+  const cleanupMarkers = () => {
+    if (markersRef.current.length > 0) {
+      markersRef.current.forEach(marker => marker.setMap(null));
+      markersRef.current = [];
+    }
   };
 
-  return (
-    <div className="map-container rounded-lg overflow-hidden shadow-lg" style={{ height }}>
-      {!mapError && properties.length > 0 ? (
-        <div className="bg-gray-100 p-6 w-full h-full flex flex-col">
-          <div className="flex items-center mb-4">
-            <MapPin className="h-5 w-5 mr-2 text-primary" />
-            <h3 className="font-semibold text-lg">Property Location</h3>
-          </div>
+  useEffect(() => {
+    // Initialize Google Maps
+    const initMap = async () => {
+      if (!mapRef.current) return;
+      
+      try {
+        setLoading(true);
+        setError(false);
+        
+        // Load Google Maps API
+        const loader = new GoogleMapsLoader({
+          apiKey: API_KEY,
+          version: "weekly"
+        });
+        
+        await loader.load();
+        
+        // Create map instance
+        if (!mapInstanceRef.current) {
+          // Default coordinates (will be overridden if properties exist)
+          let mapCenter = center || { lat: 34.0522, lng: -118.2437 }; // Los Angeles default
           
-          {properties.map((property) => (
-            <div key={property.id} className="bg-white p-4 rounded-lg shadow mb-4">
-              <div className="flex flex-col">
-                <div className="flex items-start mb-2">
-                  <MapPin className="h-5 w-5 text-gray-500 mr-2 mt-1 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium">{property.address}</p>
-                    <p className="text-gray-600">{property.city}, {property.state} {property.zipCode}</p>
-                  </div>
-                </div>
-                
-                <div className="mt-3 flex items-center">
-                  <a 
-                    href={getGoogleMapsUrl(property)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center text-primary hover:underline mr-4"
-                  >
-                    <ExternalLink className="h-4 w-4 mr-1" />
-                    View on Google Maps
-                  </a>
-                  
-                  <a 
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-                      `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center text-primary hover:underline"
-                  >
-                    <Navigation className="h-4 w-4 mr-1" />
-                    Get Directions
-                  </a>
-                </div>
-                
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <p className="text-lg font-semibold text-primary">{formatPrice(property.price)}</p>
-                  <p className="text-gray-700 font-medium">{property.bedrooms} beds • {property.bathrooms} baths • {property.squareFeet.toLocaleString()} sq ft</p>
+          // Override with property coordinates if available
+          if (properties.length > 0) {
+            const property = properties[0];
+            mapCenter = {
+              lat: parseFloat(property.lat),
+              lng: parseFloat(property.lng)
+            };
+          }
+          
+          // Create the map
+          mapInstanceRef.current = new google.maps.Map(mapRef.current, {
+            center: mapCenter,
+            zoom: zoom,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: true,
+            zoomControl: true,
+          });
+        }
+        
+        // Clean up existing markers before adding new ones
+        cleanupMarkers();
+        
+        // Add markers for each property
+        if (properties.length > 0) {
+          const bounds = new google.maps.LatLngBounds();
+          const infoWindow = new google.maps.InfoWindow();
+          
+          properties.forEach(property => {
+            const position = {
+              lat: parseFloat(property.lat),
+              lng: parseFloat(property.lng)
+            };
+            
+            // Create marker
+            const marker = new google.maps.Marker({
+              position,
+              map: mapInstanceRef.current,
+              title: property.title,
+              animation: google.maps.Animation.DROP
+            });
+            
+            // Store marker reference for cleanup
+            markersRef.current.push(marker);
+            
+            // Extend bounds to include this position
+            bounds.extend(position);
+            
+            // Create info window content
+            const contentString = `
+              <div style="padding: 8px; min-width: 200px;">
+                <h3 style="font-weight: 600; margin-bottom: 4px; color: #1e3a8a;">${property.title}</h3>
+                <p style="margin: 4px 0; color: #6b7280;">${property.address}, ${property.city}</p>
+                <p style="font-weight: 600; margin: 8px 0; color: #2563eb;">$${parseInt(property.price).toLocaleString()}</p>
+                <div style="margin-top: 8px; display: flex; gap: 12px;">
+                  <span style="color: #4b5563;">${property.bedrooms} beds</span>
+                  <span style="color: #4b5563;">${property.bathrooms} baths</span>
+                  <span style="color: #4b5563;">${property.squareFeet.toLocaleString()} sq ft</span>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-          <div className="text-center text-gray-500 p-6">
-            <MapPin className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-            <h3 className="text-lg font-medium mb-2">Location Information</h3>
-            <p>Property location details are unavailable at the moment.</p>
+            `;
+            
+            // Add click listener to open info window
+            marker.addListener("click", () => {
+              infoWindow.setContent(contentString);
+              infoWindow.open(mapInstanceRef.current, marker);
+            });
+          });
+          
+          // Fit map to show all markers if multiple properties
+          if (properties.length > 1 && mapInstanceRef.current) {
+            mapInstanceRef.current.fitBounds(bounds);
+          }
+        }
+        
+        setLoading(false);
+      } catch (err) {
+        console.error("Error loading Google Maps:", err);
+        setError(true);
+        setLoading(false);
+      }
+    };
+    
+    initMap();
+    
+    // Cleanup function
+    return () => {
+      cleanupMarkers();
+    };
+  }, [properties, center, zoom]);
+  
+  return (
+    <div className="map-container rounded-lg overflow-hidden shadow-lg" style={{ height }}>
+      {loading && (
+        <div className="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center z-10">
+          <div className="text-center">
+            <Loader className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
+            <p className="text-gray-600">Loading map...</p>
           </div>
         </div>
       )}
+      
+      {error && (
+        <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10">
+          <div className="text-center p-6">
+            <p className="text-red-500 font-medium mb-2">Unable to load the map</p>
+            <p className="text-gray-600">Please try again later</p>
+          </div>
+        </div>
+      )}
+      
+      <div 
+        ref={mapRef} 
+        className="w-full h-full"
+        aria-label="Google Map showing property location"
+      />
     </div>
   );
 };
