@@ -5,6 +5,7 @@ import { Property } from "@shared/schema";
 import { formatPrice } from "@/utils/formatters";
 import PropertyMap from "@/components/property/PropertyMap";
 import AppointmentForm from "@/components/forms/AppointmentForm";
+import PropertyRating from "@/components/property/PropertyRating";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -148,6 +149,13 @@ const PropertyDetails = () => {
                     <div>
                       <h1 className="text-3xl font-bold text-dark">{property.title}</h1>
                       <p className="text-gray-600 text-lg">{property.address}, {property.city}, {property.state} {property.zipCode}</p>
+                      <div className="mt-2">
+                        <PropertyRating 
+                          propertyId={property.id}
+                          avgRating={Number(property.avgRating || 0)}
+                          ratingCount={property.ratingCount || 0}
+                        />
+                      </div>
                     </div>
                     <div className="text-2xl font-bold text-primary mt-2 lg:mt-0">
                       {formatPrice(property.price)}

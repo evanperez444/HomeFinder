@@ -28,12 +28,8 @@ export default function PropertyRating({
 
   const { mutate: submitRating, isPending } = useMutation({
     mutationFn: async (newRating: number) => {
-      return apiRequest(`/api/properties/${propertyId}/rate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ rating: newRating }),
+      return apiRequest("POST", `/api/properties/${propertyId}/rate`, {
+        rating: newRating,
       });
     },
     onSuccess: () => {

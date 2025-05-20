@@ -7,6 +7,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { Star } from "lucide-react";
 
 interface PropertyCardProps {
   property: Property;
@@ -103,6 +104,18 @@ const PropertyCard = ({ property, onScheduleViewing }: PropertyCardProps) => {
         </div>
         <h3 className="text-lg font-semibold mt-2">{property.title}</h3>
         <p className="text-gray-600 text-sm">{property.city}, {property.state} {property.zipCode}</p>
+        <div className="flex items-center mt-2">
+          {property.avgRating && Number(property.avgRating) > 0 ? (
+            <>
+              <div className="flex items-center">
+                <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 mr-1" />
+                <span className="text-sm text-gray-600">{Number(property.avgRating).toFixed(1)} ({property.ratingCount || 0})</span>
+              </div>
+            </>
+          ) : (
+            <span className="text-sm text-gray-500">No ratings yet</span>
+          )}
+        </div>
         <div className="flex justify-between mt-3">
           <div className="flex items-center">
             <i className="fas fa-bed text-gray-400 mr-1"></i>
