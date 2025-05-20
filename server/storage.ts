@@ -60,6 +60,24 @@ export class MemStorage implements IStorage {
     this.appointments = new Map();
     this.agents = new Map();
     
+    // Initialize with some sample data
+    this.initializeData();
+  }
+  
+  // Initialize with sample data
+  private async initializeData() {
+    // Create default admin user first
+    const adminUser = await this.createUser({
+      username: "admin",
+      password: "password123",
+      email: "admin@homefinder.com",
+      fullName: "Admin User",
+      savedProperties: "[]"
+    });
+    
+    // Initialize with sample property listings
+    this.seedProperties(adminUser.id);
+    
     // Initialize with some sample agents
     this.seedAgents();
   }
@@ -250,6 +268,154 @@ export class MemStorage implements IStorage {
   }
 
   // Helper to seed some initial agents
+  // Seed sample property data
+  private seedProperties(userId: number) {
+    const propertyData: InsertProperty[] = [
+      {
+        title: "Modern Luxury Villa",
+        description: "Elegant modern villa with panoramic views, this stunning 4-bedroom home features high ceilings, floor-to-ceiling windows, and premium finishes throughout. The open-concept living space flows to a private backyard with a pool. Includes smart home technology, designer kitchen with high-end appliances, and a luxurious primary suite.",
+        price: "1250000",
+        address: "123 Highland Drive",
+        city: "Los Angeles",
+        state: "CA",
+        zipCode: "90210",
+        lat: "34.0522",
+        lng: "-118.2437",
+        bedrooms: 4,
+        bathrooms: 3,
+        squareFeet: 3200,
+        yearBuilt: 2020,
+        propertyType: "House",
+        listingType: "buy",
+        imageUrl: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format&fit=crop",
+        userId: 1,
+        featured: true,
+        status: "available",
+        avgRating: "4.7",
+        ratingCount: 12
+      },
+      {
+        title: "Downtown Luxury Apartment",
+        description: "Stunning luxury apartment in the heart of downtown with breathtaking city views. This 2-bedroom, 2-bath unit features high-end finishes, stainless steel appliances, and an open floor plan perfect for entertaining. Building amenities include a fitness center, rooftop pool, and 24-hour concierge.",
+        price: "650000",
+        address: "456 Main Street, Unit 1502",
+        city: "San Francisco",
+        state: "CA",
+        zipCode: "94105",
+        lat: "37.7749",
+        lng: "-122.4194",
+        bedrooms: 2,
+        bathrooms: 2,
+        squareFeet: 1200,
+        yearBuilt: 2018,
+        propertyType: "Apartment",
+        listingType: "buy",
+        imageUrl: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&auto=format&fit=crop",
+        userId: 1,
+        featured: false,
+        status: "available",
+        avgRating: "4.2",
+        ratingCount: 8
+      },
+      {
+        title: "Charming Suburban Home",
+        description: "Beautiful family home in a peaceful suburban neighborhood. This well-maintained 3-bedroom house features hardwood floors, a renovated kitchen, and a spacious backyard perfect for families. Close to schools, parks, and shopping centers.",
+        price: "480000",
+        address: "789 Maple Avenue",
+        city: "Portland",
+        state: "OR",
+        zipCode: "97205",
+        lat: "45.5231",
+        lng: "-122.6765",
+        bedrooms: 3,
+        bathrooms: 2,
+        squareFeet: 1800,
+        yearBuilt: 2005,
+        propertyType: "House",
+        listingType: "buy",
+        imageUrl: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&auto=format&fit=crop",
+        userId: 1,
+        featured: true,
+        status: "available",
+        avgRating: "4.5",
+        ratingCount: 15
+      },
+      {
+        title: "Waterfront Condo",
+        description: "Luxurious waterfront condo with panoramic ocean views. This stylish 2-bedroom unit offers modern design, premium finishes, and a private balcony overlooking the marina. Residents enjoy access to a fitness center, swimming pool, and secure parking.",
+        price: "2500",
+        address: "101 Harbor Drive, Unit 305",
+        city: "Miami",
+        state: "FL",
+        zipCode: "33132",
+        lat: "25.7617",
+        lng: "-80.1918",
+        bedrooms: 2,
+        bathrooms: 2,
+        squareFeet: 1100,
+        yearBuilt: 2015,
+        propertyType: "Condo",
+        listingType: "rent",
+        imageUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop",
+        userId: 1,
+        featured: true,
+        status: "available",
+        avgRating: "4.8",
+        ratingCount: 9
+      },
+      {
+        title: "Cozy Studio Apartment",
+        description: "Modern and efficiently designed studio apartment in a vibrant neighborhood. This stylish unit features a sleek kitchen with stainless steel appliances, hardwood floors, and large windows offering plenty of natural light. Building amenities include laundry facilities and a rooftop lounge.",
+        price: "1200",
+        address: "222 Urban Street, Unit 15",
+        city: "Austin",
+        state: "TX",
+        zipCode: "78701",
+        lat: "30.2672",
+        lng: "-97.7431",
+        bedrooms: 0,
+        bathrooms: 1,
+        squareFeet: 550,
+        yearBuilt: 2010,
+        propertyType: "Apartment",
+        listingType: "rent",
+        imageUrl: "https://images.unsplash.com/photo-1554995207-c18c203602cb?w=800&auto=format&fit=crop",
+        userId: 1,
+        featured: false,
+        status: "available",
+        avgRating: "4.0",
+        ratingCount: 6
+      },
+      {
+        title: "Historic Townhouse",
+        description: "Beautifully restored historic townhouse combining classic architecture with modern amenities. This 3-story home features original hardwood floors, exposed brick walls, and a gourmet kitchen with high-end appliances. Includes a private backyard and rooftop deck with city views.",
+        price: "870000",
+        address: "555 Heritage Lane",
+        city: "Boston",
+        state: "MA",
+        zipCode: "02108",
+        lat: "42.3601",
+        lng: "-71.0589",
+        bedrooms: 3,
+        bathrooms: 2.5,
+        squareFeet: 2200,
+        yearBuilt: 1890,
+        propertyType: "Townhouse",
+        listingType: "buy",
+        imageUrl: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&auto=format&fit=crop",
+        userId: 1,
+        featured: true,
+        status: "available",
+        avgRating: "4.6",
+        ratingCount: 11
+      }
+    ];
+
+    propertyData.forEach(property => {
+      this.createProperty(property);
+    });
+  }
+
   private seedAgents() {
     const agentData: InsertAgent[] = [
       {
