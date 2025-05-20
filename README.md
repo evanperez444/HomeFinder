@@ -1,3 +1,6 @@
+![image](https://github.com/user-attachments/assets/a83b0d8a-3e74-4dbe-a50f-c65c8ccce474)
+
+
 # HomeFinder - Real Estate Platform
 
 HomeFinder is a full-stack web application for real estate listings, allowing users to browse properties, filter listings, view details, and request appointments.
