@@ -30,9 +30,16 @@ const PropertyMap = ({
 
   // Function to initialize map
   const initializeMap = () => {
-    // Skip if map already initialized or element not available
-    if (mapInitialized || !mapRef.current || !window.google || !window.google.maps) {
+    // Skip if element not available or Google Maps isn't loaded
+    if (!mapRef.current || !window.google || !window.google.maps) {
       return;
+    }
+    
+    // Clear any existing map elements
+    if (mapRef.current) {
+      while (mapRef.current.firstChild) {
+        mapRef.current.removeChild(mapRef.current.firstChild);
+      }
     }
 
     try {
@@ -136,10 +143,12 @@ const PropertyMap = ({
 
   // Re-initialize map when properties change
   useEffect(() => {
-    if (mapLoaded && properties.length > 0 && !mapInitialized) {
+    if (mapLoaded && properties.length > 0) {
+      // Always re-initialize when properties change
+      setMapInitialized(false);
       initializeMap();
     }
-  }, [mapLoaded, properties, mapInitialized]);
+  }, [mapLoaded, properties]);
 
   return (
     <div className="map-container rounded-lg overflow-hidden shadow-lg" style={{ height }}>
