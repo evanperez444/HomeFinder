@@ -1,0 +1,16 @@
+Purchasing a home is one of the most significant financial decisions in an adult’s life. However, the home-buying process can be overwhelming, especially for first-time buyers who need to search through countless listings and switch between multiple property listing platforms. In this project, we aim to simplify this experience by developing a full-stack web application that organizes real estate listings into one place, offering a simple and easy-to-use interface for buyers to search for potential homes.
+Our application will allow users to search for properties based on certain criteria that might fit their needs the best. Some information that we plan to include to provide for our users is the price of the properties, number of bedrooms, and location. Within the application, users will be able to filter through listings, sort through them, and be able to login with an account, and save listings that they find to meet their specific wants or needs. In addition, we plan to implement the capability of showing the location of the property using the Google Maps API. All of these features aim to streamline the search process and enable potential home buyers to make informed decisions. We also aim to add additional features if required as we go along.
+To provide quality data to our users, we plan to take advantage of real estate APIs, such as the Real-Time Zillow Data API from RapidAPI. With this data, we will be able to easily allocate, organize, and store our data in a PostgreSQL or MySQL database. Our application will interact with this database in order to provide specific listings to the customer. We plan to deploy this application on a cloud platform such as Vercel for easy access. Additionally, to set the project apart from other sites, we plan to implement features that utilize Large Language Models, such as querying data using English language or a Chatbot that gives home purchasing advice.
+Tech Stack
+	The tech stack to build this project will include: 
+Frontend
+React✅
+HTML✅
+CSS✅
+Backend
+Next.js✅ 
+Python✅
+PostgreSQL/MySQL❎
+Google Maps API✅
+Hosting
+Vercel
