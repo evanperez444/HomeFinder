@@ -6,7 +6,7 @@ import PropertyCard from "@/components/property/PropertyCard";
 import PropertyFilters from "@/components/property/PropertyFilters";
 import AppointmentForm from "@/components/forms/AppointmentForm";
 import { Property, PropertyFilter } from "@shared/schema";
-import { StatCard, TestimonialCard, NeighborhoodCard } from "@/components/ui/data-display";
+import { StatCard, NeighborhoodCard } from "@/components/ui/data-display";
 
 const HomePage = () => {
   const [, setLocation] = useLocation();
@@ -47,30 +47,7 @@ const HomePage = () => {
     { name: "Downtown LA", listingsCount: 41 }
   ];
 
-  // Sample testimonial data
-  const testimonials = [
-    {
-      quote: "HomeFinder made our home buying process so much easier. The search filters were exactly what we needed, and our agent was incredible. We found our dream home in just three weeks!",
-      author: "Jennifer P.",
-      role: "First-time Homebuyer",
-      rating: 5,
-      imageUrl: "https://images.unsplash.com/photo-1491349174775-aaafddd81942?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100"
-    },
-    {
-      quote: "As an investor, I appreciate how HomeFinder lets me filter for properties with good ROI potential. The neighborhood statistics and price history charts are invaluable for my decision making.",
-      author: "Robert K.",
-      role: "Property Investor",
-      rating: 4.5,
-      imageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100"
-    },
-    {
-      quote: "Selling our home was stress-free with HomeFinder. The platform made it easy to list our property, and the professional photography service they recommended made our home look amazing in the photos!",
-      author: "Maria T.",
-      role: "Home Seller",
-      rating: 5,
-      imageUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100"
-    }
-  ];
+  // No testimonials data as requested
 
   return (
     <>
@@ -195,25 +172,7 @@ const HomePage = () => {
 
 
 
-      {/* Testimonials Section */}
-      <section className="py-12 bg-white">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-dark text-center mb-12">What Our Clients Say</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <TestimonialCard 
-                key={index}
-                quote={testimonial.quote}
-                author={testimonial.author}
-                role={testimonial.role}
-                rating={testimonial.rating}
-                imageUrl={testimonial.imageUrl}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Testimonials section removed as requested */}
 
       {/* CTA Section */}
       <section className="py-16 bg-primary">

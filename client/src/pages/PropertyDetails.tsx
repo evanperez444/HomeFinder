@@ -218,11 +218,6 @@ const PropertyDetails = () => {
                   <h2 className="text-xl font-semibold mb-4">Location</h2>
                   <PropertyMap 
                     properties={[property]} 
-                    center={{
-                      lat: parseFloat(property.lat.toString()),
-                      lng: parseFloat(property.lng.toString())
-                    }}
-                    zoom={15}
                   />
                   <p className="mt-4 text-gray-600">
                     {property.address}, {property.city}, {property.state} {property.zipCode}
