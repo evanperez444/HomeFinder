@@ -33,6 +33,8 @@ export const properties = pgTable("properties", {
   userId: integer("user_id").notNull(),
   featured: boolean("featured").default(false),
   status: text("status").default("available"),
+  avgRating: numeric("avg_rating").default("0"),
+  ratingCount: integer("rating_count").default(0),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

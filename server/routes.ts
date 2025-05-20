@@ -166,6 +166,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: 'Failed to fetch property' });
     }
   });
+  
+  // Rate a property
+  app.post('/api/properties/:id/rate', async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { rating } = req.body;
+      
+      if (!rating || rating < 1 || rating > 5) {
+        return res.status(400).json({ message: 'Invalid rating. Must be between 1 and 5.' });
+      }
+      
+      const property = await storage.getProperty(id);
+      if (!property) {
+        return res.status(404).json({ message: 'Property not found' });
+      }
+      
+      // Calculate new average rating
+      const newRatingCount = (property.ratingCount || 0) + 1;
+      const currentTotalRating = (property.avgRating || 0) * (property.ratingCount || 0);
+      const newAvgRating = (currentTotalRating + rating) / newRatingCount;
+      
+      // Update property
+      const updatedProperty = await storage.updateProperty(id, {
+        avgRating: newAvgRating,
+        ratingCount: newRatingCount
+      });
+      
+      return res.json(updatedProperty);
+    } catch (error) {
+      return res.status(500).json({ message: 'Failed to rate property' });
+    }
+  });
 
   app.post('/api/properties', async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) {

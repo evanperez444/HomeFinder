@@ -4,11 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Home, Building, Tag, Calendar } from "lucide-react";
 import PropertyCard from "@/components/property/PropertyCard";
 import PropertyFilters from "@/components/property/PropertyFilters";
-import PropertyMap from "@/components/property/PropertyMap";
 import AppointmentForm from "@/components/forms/AppointmentForm";
 import { Property, PropertyFilter } from "@shared/schema";
-import { StatCard, AgentCard, TestimonialCard, NeighborhoodCard } from "@/components/ui/data-display";
-import { getAgentImageByIndex } from "@/assets/AgentImages";
+import { StatCard, TestimonialCard, NeighborhoodCard } from "@/components/ui/data-display";
 
 const HomePage = () => {
   const [, setLocation] = useLocation();
@@ -21,9 +19,9 @@ const HomePage = () => {
     queryKey: ["/api/properties/featured"],
   });
 
-  // Fetch agents
-  const { data: agents = [] } = useQuery({
-    queryKey: ["/api/agents"],
+  // Fetch all properties instead of just featured ones
+  const { data: properties = [], isLoading: isLoadingProperties } = useQuery<Property[]>({
+    queryKey: ["/api/properties"],
   });
 
   const handleFilterSubmit = (newFilters: PropertyFilter) => {
@@ -93,11 +91,11 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Featured Listings Section */}
+      {/* All Listings Section */}
       <section className="py-12 bg-white">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-dark">Featured Listings</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-dark">Property Listings</h2>
             <Link href="/buy" className="text-primary font-medium hover:underline">
               View All <i className="fas fa-arrow-right ml-1"></i>
             </Link>
@@ -105,9 +103,9 @@ const HomePage = () => {
           
           {/* Property Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {isLoading ? (
+            {isLoadingProperties ? (
               // Loading skeleton
-              Array(3).fill(0).map((_, index) => (
+              Array(6).fill(0).map((_, index) => (
                 <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
                   <div className="w-full h-48 bg-gray-200 animate-pulse"></div>
                   <div className="p-4">
@@ -118,8 +116,8 @@ const HomePage = () => {
                   </div>
                 </div>
               ))
-            ) : featuredProperties.length > 0 ? (
-              featuredProperties.slice(0, 3).map((property) => (
+            ) : properties.length > 0 ? (
+              properties.map((property) => (
                 <PropertyCard 
                   key={property.id} 
                   property={property}
@@ -128,7 +126,13 @@ const HomePage = () => {
               ))
             ) : (
               <div className="col-span-3 text-center py-8">
-                <p className="text-gray-500">No featured properties available at the moment.</p>
+                <p className="text-gray-500">No properties available at the moment.</p>
+                <button 
+                  className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+                  onClick={() => window.location.reload()}
+                >
+                  Refresh Page
+                </button>
               </div>
             )}
           </div>
@@ -189,35 +193,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Agents Section */}
-      <section className="py-12 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-dark text-center mb-2">Meet Our Top Agents</h2>
-          <p className="text-gray-600 text-center mb-12">Our professional agents are here to help you find your dream home</p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {agents.map((agent, index) => (
-              <AgentCard 
-                key={agent.id}
-                name={agent.name}
-                specialization={agent.specialization}
-                rating={parseFloat(agent.rating.toString())}
-                propertiesSold={agent.propertiesSold}
-                imageUrl={getAgentImageByIndex(index)}
-              />
-            ))}
-          </div>
-          
-          <div className="text-center mt-8">
-            <Link
-              href="#"
-              className="inline-block bg-white text-primary font-medium px-6 py-3 rounded-md border border-primary hover:bg-primary hover:text-white transition duration-300"
-            >
-              View All Agents
-            </Link>
-          </div>
-        </div>
-      </section>
+
 
       {/* Testimonials Section */}
       <section className="py-12 bg-white">
