@@ -47,19 +47,19 @@ const Navbar = () => {
                 <span className="text-xl font-bold text-dark">HomeFinder</span>
               </Link>
               <nav className="hidden md:flex space-x-6">
-                <Link href="/" className={`text-dark hover:text-primary font-medium ${location === '/' ? 'text-primary' : ''}`}>
+                <Link href="/" className={`text-dark hover:text-primary font-medium transition-colors ${location === '/' ? 'text-primary' : ''}`}>
                   Home
                 </Link>
-                <Link href="/buy" className={`text-dark hover:text-primary font-medium ${location === '/buy' ? 'text-primary' : ''}`}>
+                <Link href="/buy" className={`text-dark hover:text-primary font-medium transition-colors ${location === '/buy' ? 'text-primary' : ''}`}>
                   Buy
                 </Link>
-                <Link href="/rent" className={`text-dark hover:text-primary font-medium ${location === '/rent' ? 'text-primary' : ''}`}>
+                <Link href="/rent" className={`text-dark hover:text-primary font-medium transition-colors ${location === '/rent' ? 'text-primary' : ''}`}>
                   Rent
                 </Link>
-                <Link href="/sell" className={`text-dark hover:text-primary font-medium ${location === '/sell' ? 'text-primary' : ''}`}>
+                <Link href="/sell" className={`text-dark hover:text-primary font-medium transition-colors ${location === '/sell' ? 'text-primary' : ''}`}>
                   Sell
                 </Link>
-                <Link href="/assistant" className={`text-dark hover:text-primary font-medium flex items-center ${location === '/assistant' ? 'text-primary' : ''}`}>
+                <Link href="/assistant" className={`text-dark hover:text-primary font-medium flex items-center transition-colors ${location === '/assistant' ? 'text-primary' : ''}`}>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                   Real Estate Assistant
                 </Link>
@@ -71,7 +71,7 @@ const Navbar = () => {
                   <span className="text-dark font-medium">Welcome, {user.fullName.split(' ')[0]}</span>
                   <button 
                     onClick={handleLogout}
-                    className="text-dark hover:text-primary font-medium"
+                    className="text-dark hover:text-primary font-medium transition-colors"
                   >
                     Log Out
                   </button>
@@ -80,13 +80,13 @@ const Navbar = () => {
                 <>
                   <button 
                     onClick={openLoginModal} 
-                    className="hidden md:block text-dark hover:text-primary font-medium"
+                    className="hidden md:block text-dark hover:text-primary font-medium transition-colors"
                   >
                     Log In
                   </button>
                   <button 
                     onClick={openSignupModal}
-                    className="hidden md:block bg-primary text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
+                    className="hidden md:block bg-primary text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
                   >
                     Sign Up
                   </button>
@@ -94,7 +94,7 @@ const Navbar = () => {
               )}
               <button 
                 onClick={toggleMobileMenu}
-                className="md:hidden text-dark"
+                className="md:hidden text-dark hover:text-primary transition-colors"
                 aria-label="Toggle mobile menu"
               >
                 <i className="fas fa-bars text-xl"></i>
@@ -103,45 +103,49 @@ const Navbar = () => {
           </div>
         </div>
         
-        {/* Mobile Menu */}
-        <div className={`md:hidden ${mobileMenuOpen ? '' : 'hidden'} bg-white border-t border-gray-200`}>
+        {/* Mobile Menu - Improved with animation and better contrast */}
+        <div 
+          className={`md:hidden bg-white border-t border-gray-200 transform transition-transform duration-300 ${
+            mobileMenuOpen ? 'translate-y-0 shadow-md' : '-translate-y-full'
+          }`}
+        >
           <div className="container mx-auto px-4 py-3">
             <nav className="flex flex-col space-y-3">
-              <Link href="/" onClick={() => setMobileMenuOpen(false)} className="text-dark hover:text-primary font-medium py-2">
+              <Link href="/" onClick={() => setMobileMenuOpen(false)} className="text-dark hover:text-primary font-medium py-2 transition-colors">
                 Home
               </Link>
-              <Link href="/buy" onClick={() => setMobileMenuOpen(false)} className="text-dark hover:text-primary font-medium py-2">
+              <Link href="/buy" onClick={() => setMobileMenuOpen(false)} className="text-dark hover:text-primary font-medium py-2 transition-colors">
                 Buy
               </Link>
-              <Link href="/rent" onClick={() => setMobileMenuOpen(false)} className="text-dark hover:text-primary font-medium py-2">
+              <Link href="/rent" onClick={() => setMobileMenuOpen(false)} className="text-dark hover:text-primary font-medium py-2 transition-colors">
                 Rent
               </Link>
-              <Link href="/sell" onClick={() => setMobileMenuOpen(false)} className="text-dark hover:text-primary font-medium py-2">
+              <Link href="/sell" onClick={() => setMobileMenuOpen(false)} className="text-dark hover:text-primary font-medium py-2 transition-colors">
                 Sell
               </Link>
-              <Link href="/assistant" onClick={() => setMobileMenuOpen(false)} className="text-dark hover:text-primary font-medium py-2 flex items-center">
+              <Link href="/assistant" onClick={() => setMobileMenuOpen(false)} className="text-dark hover:text-primary font-medium py-2 flex items-center transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                 Real Estate Assistant
               </Link>
               
               {user ? (
-                <div className="flex flex-col pt-2">
+                <div className="flex flex-col pt-2 border-t border-gray-100">
                   <span className="text-dark font-medium py-2">Welcome, {user.fullName.split(' ')[0]}</span>
-                  <button onClick={handleLogout} className="text-dark hover:text-primary font-medium py-2 text-left">
+                  <button onClick={handleLogout} className="text-dark hover:text-primary font-medium py-2 text-left transition-colors">
                     Log Out
                   </button>
                 </div>
               ) : (
-                <div className="flex space-x-4 pt-2">
+                <div className="flex flex-col space-y-2 pt-2 border-t border-gray-100">
                   <button 
                     onClick={openLoginModal}
-                    className="text-dark hover:text-primary font-medium"
+                    className="text-dark hover:text-primary font-medium py-2 text-left transition-colors"
                   >
                     Log In
                   </button>
                   <button 
                     onClick={openSignupModal}
-                    className="bg-primary text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
+                    className="bg-primary text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors text-center"
                   >
                     Sign Up
                   </button>

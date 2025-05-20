@@ -58,6 +58,10 @@ const AppointmentForm = ({
 
   const createAppointmentMutation = useMutation({
     mutationFn: async (data: AppointmentFormValues) => {
+      if (!user) {
+        throw new Error("You must be logged in to schedule a viewing.");
+      }
+
       // Combine date and time
       const [hours, minutes] = data.time.split(":").map(Number);
       const appointmentDate = new Date(data.date);
@@ -65,9 +69,12 @@ const AppointmentForm = ({
 
       const appointmentData = {
         propertyId,
-        date: appointmentDate.toISOString(),
+        userId: user.id, // Explicitly include the user ID from the auth context
+        date: appointmentDate.toISOString(), // Send as ISO string, will be parsed on server
         message: data.message || "",
       };
+      
+      console.log("Sending appointment data:", appointmentData);
       
       const response = await apiRequest("POST", "/api/appointments", appointmentData);
       return response.json();
@@ -82,6 +89,7 @@ const AppointmentForm = ({
       form.reset();
     },
     onError: (error) => {
+      console.error("Appointment scheduling error:", error);
       toast({
         title: "Error scheduling appointment",
         description: error instanceof Error ? error.message : "An unexpected error occurred.",
@@ -103,6 +111,9 @@ const AppointmentForm = ({
     setIsSubmitting(true);
     try {
       await createAppointmentMutation.mutateAsync(data);
+    } catch (error) {
+      // Error will be handled in the mutation's onError callback
+      console.error("Submit error:", error);
     } finally {
       setIsSubmitting(false);
     }

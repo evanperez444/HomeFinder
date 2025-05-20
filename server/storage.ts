@@ -100,28 +100,69 @@ export class MemStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.userId++;
-    const now = new Date();
-    const user: User = { ...insertUser, id, savedProperties: '[]', createdAt: now };
-    this.users.set(id, user);
-    return user;
+    try {
+      console.log("Storage: Creating user with data:", insertUser);
+      
+      const id = this.userId++;
+      const now = new Date();
+      
+      // Make sure savedProperties is initialized correctly
+      let savedProperties = "[]";
+      if (insertUser.savedProperties && typeof insertUser.savedProperties === 'string') {
+        // If it's provided as a string, use it (should be a valid JSON string)
+        savedProperties = insertUser.savedProperties;
+      }
+      
+      const user: User = { 
+        ...insertUser, 
+        id, 
+        savedProperties, 
+        createdAt: now 
+      };
+      
+      console.log("Storage: Created user object:", user);
+      
+      this.users.set(id, user);
+      return user;
+    } catch (error) {
+      console.error("Error in createUser:", error);
+      throw error;
+    }
   }
 
   async updateUserSavedProperties(userId: number, propertyId: number, add: boolean): Promise<User | undefined> {
     const user = await this.getUser(userId);
     if (!user) return undefined;
 
-    let savedProperties = [...user.savedProperties];
+    // Parse the savedProperties string to an array if it's a string
+    let savedPropertiesArray: number[] = [];
     
-    if (add) {
-      if (!savedProperties.includes(propertyId)) {
-        savedProperties.push(propertyId);
+    if (typeof user.savedProperties === 'string') {
+      try {
+        savedPropertiesArray = JSON.parse(user.savedProperties);
+      } catch (error) {
+        console.error("Error parsing savedProperties:", error);
+        savedPropertiesArray = [];
       }
-    } else {
-      savedProperties = savedProperties.filter(id => id !== propertyId);
+    } else if (Array.isArray(user.savedProperties)) {
+      savedPropertiesArray = user.savedProperties;
     }
 
-    const updatedUser = { ...user, savedProperties };
+    // Update the array
+    if (add) {
+      if (!savedPropertiesArray.includes(propertyId)) {
+        savedPropertiesArray.push(propertyId);
+      }
+    } else {
+      savedPropertiesArray = savedPropertiesArray.filter(id => id !== propertyId);
+    }
+
+    // Update the user with the new array (as a string)
+    const updatedUser = { 
+      ...user, 
+      savedProperties: JSON.stringify(savedPropertiesArray) 
+    };
+    
     this.users.set(userId, updatedUser);
     return updatedUser;
   }
@@ -235,11 +276,33 @@ export class MemStorage implements IStorage {
   }
 
   async createAppointment(insertAppointment: InsertAppointment): Promise<Appointment> {
-    const id = this.appointmentId++;
-    const now = new Date();
-    const appointment: Appointment = { ...insertAppointment, id, createdAt: now };
-    this.appointments.set(id, appointment);
-    return appointment;
+    try {
+      console.log("Creating appointment with data:", insertAppointment);
+      
+      const id = this.appointmentId++;
+      const now = new Date();
+      
+      // Make sure date is a proper Date object
+      let date = insertAppointment.date;
+      if (typeof date === 'string') {
+        date = new Date(date);
+      }
+      
+      const appointment: Appointment = { 
+        ...insertAppointment, 
+        id, 
+        date, // Ensure date is a Date object
+        createdAt: now 
+      };
+      
+      console.log("Created appointment object:", appointment);
+      
+      this.appointments.set(id, appointment);
+      return appointment;
+    } catch (error) {
+      console.error("Error in createAppointment:", error);
+      throw error;
+    }
   }
 
   async updateAppointment(id: number, appointment: Partial<Appointment>): Promise<Appointment | undefined> {

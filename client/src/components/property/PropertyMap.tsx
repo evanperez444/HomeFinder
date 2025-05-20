@@ -1,3 +1,4 @@
+import React, { useEffect, useRef } from "react";
 import { Property } from "@shared/schema";
 import { MapPin, Navigation, ExternalLink } from "lucide-react";
 import { formatPrice } from "@/utils/formatters";
@@ -11,14 +12,90 @@ const PropertyMap = ({
   properties, 
   height = "500px"
 }: PropertyMapProps) => {
-  // Function to get static Google Maps image URL
-  const getStaticMapUrl = (property: Property) => {
-    const API_KEY = "AIzaSyD5jIwHOXztPMnJ2vSaeLtcvsDOaU9kIbc";
-    const lat = parseFloat(property.lat);
-    const lng = parseFloat(property.lng);
-    return `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=15&size=600x400&markers=color:red%7C${lat},${lng}&key=${API_KEY}`;
-  };
-  
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<google.maps.Map | null>(null);
+  const markersRef = useRef<google.maps.Marker[]>([]);
+
+  // Initialize map when component mounts
+  useEffect(() => {
+    // Don't proceed if no properties
+    if (!properties.length || !mapRef.current) return;
+    
+    const initMap = () => {
+      try {
+        // Check if Google Maps API is available
+        if (!window.google || !window.google.maps) {
+          console.error("Google Maps API not loaded");
+          return;
+        }
+        
+        // Get property coordinates
+        const property = properties[0];
+        const lat = parseFloat(property.lat as string);
+        const lng = parseFloat(property.lng as string);
+        
+        // Create map
+        const mapOptions: google.maps.MapOptions = {
+          center: { lat, lng },
+          zoom: 15,
+          mapTypeControl: true,
+          fullscreenControl: true,
+          streetViewControl: true,
+          zoomControl: true,
+        };
+        
+        // Initialize map
+        const map = new google.maps.Map(mapRef.current, mapOptions);
+        mapInstanceRef.current = map;
+        
+        // Add marker for the property
+        const marker = new google.maps.Marker({
+          position: { lat, lng },
+          map: map,
+          title: property.title,
+          animation: google.maps.Animation.DROP,
+        });
+        
+        markersRef.current.push(marker);
+        
+        // Create info window
+        const infoWindow = new google.maps.InfoWindow({
+          content: `<div class="p-2">
+            <h4 class="font-bold">${property.title}</h4>
+            <p>${property.address}, ${property.city}, ${property.state}</p>
+            <p class="font-semibold text-primary">${formatPrice(property.price)}</p>
+          </div>`
+        });
+        
+        // Add click listener to marker
+        marker.addListener("click", () => {
+          infoWindow.open(map, marker);
+        });
+        
+        // Open info window by default
+        infoWindow.open(map, marker);
+      } catch (error) {
+        console.error("Error initializing map:", error);
+      }
+    };
+    
+    // Initialize map if Google Maps API is already loaded
+    if (window.google && window.google.maps) {
+      initMap();
+    } else {
+      // Otherwise, add event listener for when the API loads
+      window.initMap = initMap;
+      // The script should be loaded in the index.html with a callback to window.initMap
+    }
+    
+    // Cleanup function
+    return () => {
+      // Clear markers on unmount
+      markersRef.current.forEach(marker => marker.setMap(null));
+      markersRef.current = [];
+    };
+  }, [properties]);
+
   // Function to get Google Maps URL for directions
   const getGoogleMapsUrl = (property: Property) => {
     const address = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`;
@@ -35,14 +112,14 @@ const PropertyMap = ({
     <div className="map-container rounded-lg overflow-hidden shadow-lg" style={{ height }}>
       {properties.length > 0 ? (
         <div className="bg-white w-full h-full flex flex-col">
-          {/* Static Map Image */}
+          {/* Interactive Map */}
           <div className="relative w-full" style={{ height: "70%" }}>
-            <img 
-              src={getStaticMapUrl(properties[0])} 
-              alt={`Map location of ${properties[0].address}`}
-              className="w-full h-full object-cover"
+            <div 
+              ref={mapRef} 
+              className="w-full h-full"
+              id="property-map"
             />
-            <div className="absolute top-3 left-3 bg-white p-2 rounded-md shadow-md">
+            <div className="absolute top-3 left-3 bg-white p-2 rounded-md shadow-md z-10">
               <h3 className="text-sm font-medium text-gray-900">{properties[0].address}</h3>
               <p className="text-xs text-gray-500">{properties[0].city}, {properties[0].state}</p>
             </div>

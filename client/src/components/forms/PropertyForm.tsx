@@ -69,25 +69,29 @@ const PropertyForm = () => {
 
   const createPropertyMutation = useMutation({
     mutationFn: async (data: PropertyFormValues) => {
-      // Random coordinates for Los Angeles area
-      const lat = 34.052235 + (Math.random() * 0.1 - 0.05);
-      const lng = -118.243683 + (Math.random() * 0.1 - 0.05);
+      // Random coordinates for Los Angeles area - as STRING values
+      const lat = (34.052235 + (Math.random() * 0.1 - 0.05)).toString();
+      const lng = (-118.243683 + (Math.random() * 0.1 - 0.05)).toString();
       
       // Get a random property image
       const imageUrl = getRandomPropertyImage();
       
+      // Important: Make sure price, lat, lng, and numeric fields are sent as strings
       const propertyData = {
         ...data,
-        price: parseFloat(data.price),
-        bedrooms: parseInt(data.bedrooms),
+        // Don't convert to numbers, keep as strings to match schema expectations
+        price: data.price, // Keep as string
+        bedrooms: parseInt(data.bedrooms), // The server might expect this as a number
         bathrooms: parseInt(data.bathrooms),
         squareFeet: parseInt(data.squareFeet),
         yearBuilt: data.yearBuilt ? parseInt(data.yearBuilt) : undefined,
-        lat,
-        lng,
+        lat, // Already a string
+        lng, // Already a string
         imageUrl,
         userId: user?.id || 0,
       };
+      
+      console.log("Sending property data:", propertyData);
       
       const response = await apiRequest("POST", "/api/properties", propertyData);
       return response.json();
@@ -101,6 +105,7 @@ const PropertyForm = () => {
       navigate("/");
     },
     onError: (error) => {
+      console.error("Error creating property:", error);
       toast({
         title: "Error creating property",
         description: error instanceof Error ? error.message : "An unexpected error occurred.",
@@ -122,6 +127,8 @@ const PropertyForm = () => {
     setIsSubmitting(true);
     try {
       await createPropertyMutation.mutateAsync(data);
+    } catch (error) {
+      console.error("Form submission error:", error);
     } finally {
       setIsSubmitting(false);
     }

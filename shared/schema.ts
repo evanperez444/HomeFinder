@@ -8,7 +8,7 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   email: text("email").notNull().unique(),
   fullName: text("full_name").notNull(),
-  savedProperties: text("saved_properties").notNull().default('[]'),
+  savedProperties: integer("saved_properties").array().notNull().default([]),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -65,12 +65,46 @@ export const insertUserSchema = createInsertSchema(users, {
   fullName: (schema) => schema.fullName
 });
 
-export const insertPropertySchema = createInsertSchema(properties).omit({
+export const insertPropertySchema = createInsertSchema(properties, {
+  // Make sure these fields are properly typed to accept either strings or numbers
+  price: z.union([
+    z.string(),
+    z.number().transform(val => String(val))
+  ]),
+  lat: z.union([
+    z.string(),
+    z.number().transform(val => String(val))
+  ]),
+  lng: z.union([
+    z.string(),
+    z.number().transform(val => String(val))
+  ]),
+  // Ensure bedrooms, bathrooms, squareFeet can be strings or numbers
+  bedrooms: z.union([
+    z.number(),
+    z.string().transform(val => Number(val))
+  ]),
+  bathrooms: z.union([
+    z.number(),
+    z.string().transform(val => Number(val))
+  ]),
+  squareFeet: z.union([
+    z.number(),
+    z.string().transform(val => Number(val))
+  ]),
+  yearBuilt: z.union([
+    z.number().optional(),
+    z.string().transform(val => val ? Number(val) : undefined).optional()
+  ]),
+}).omit({
   id: true,
   createdAt: true,
 });
 
-export const insertAppointmentSchema = createInsertSchema(appointments).omit({
+export const insertAppointmentSchema = createInsertSchema(appointments, {
+  // Override the date field to accept both Date objects and strings
+  date: z.union([z.date(), z.string().transform(val => new Date(val))]),
+}).omit({
   id: true,
   createdAt: true,
 });
@@ -81,7 +115,15 @@ export const insertAgentSchema = createInsertSchema(agents).omit({
 
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+export type User = {
+  id: number;
+  username: string;
+  password: string;
+  email: string;
+  fullName: string;
+  savedProperties: string | number[]; // Allow both string and array
+  createdAt: Date;
+};
 
 export type InsertProperty = z.infer<typeof insertPropertySchema>;
 export type Property = typeof properties.$inferSelect;
