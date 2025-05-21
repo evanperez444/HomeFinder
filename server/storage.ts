@@ -100,28 +100,69 @@ export class MemStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.userId++;
-    const now = new Date();
-    const user: User = { ...insertUser, id, savedProperties: '[]', createdAt: now };
-    this.users.set(id, user);
-    return user;
+    try {
+      console.log("Storage: Creating user with data:", insertUser);
+      
+      const id = this.userId++;
+      const now = new Date();
+      
+      // Make sure savedProperties is initialized correctly
+      let savedProperties = "[]";
+      if (insertUser.savedProperties && typeof insertUser.savedProperties === 'string') {
+        // If it's provided as a string, use it (should be a valid JSON string)
+        savedProperties = insertUser.savedProperties;
+      }
+      
+      const user: User = { 
+        ...insertUser, 
+        id, 
+        savedProperties, 
+        createdAt: now 
+      };
+      
+      console.log("Storage: Created user object:", user);
+      
+      this.users.set(id, user);
+      return user;
+    } catch (error) {
+      console.error("Error in createUser:", error);
+      throw error;
+    }
   }
 
   async updateUserSavedProperties(userId: number, propertyId: number, add: boolean): Promise<User | undefined> {
     const user = await this.getUser(userId);
     if (!user) return undefined;
 
-    let savedProperties = [...user.savedProperties];
+    // Parse the savedProperties string to an array if it's a string
+    let savedPropertiesArray: number[] = [];
     
-    if (add) {
-      if (!savedProperties.includes(propertyId)) {
-        savedProperties.push(propertyId);
+    if (typeof user.savedProperties === 'string') {
+      try {
+        savedPropertiesArray = JSON.parse(user.savedProperties);
+      } catch (error) {
+        console.error("Error parsing savedProperties:", error);
+        savedPropertiesArray = [];
       }
-    } else {
-      savedProperties = savedProperties.filter(id => id !== propertyId);
+    } else if (Array.isArray(user.savedProperties)) {
+      savedPropertiesArray = user.savedProperties;
     }
 
-    const updatedUser = { ...user, savedProperties };
+    // Update the array
+    if (add) {
+      if (!savedPropertiesArray.includes(propertyId)) {
+        savedPropertiesArray.push(propertyId);
+      }
+    } else {
+      savedPropertiesArray = savedPropertiesArray.filter(id => id !== propertyId);
+    }
+
+    // Update the user with the new array (as a string)
+    const updatedUser = { 
+      ...user, 
+      savedProperties: JSON.stringify(savedPropertiesArray) 
+    };
+    
     this.users.set(userId, updatedUser);
     return updatedUser;
   }
@@ -235,11 +276,33 @@ export class MemStorage implements IStorage {
   }
 
   async createAppointment(insertAppointment: InsertAppointment): Promise<Appointment> {
-    const id = this.appointmentId++;
-    const now = new Date();
-    const appointment: Appointment = { ...insertAppointment, id, createdAt: now };
-    this.appointments.set(id, appointment);
-    return appointment;
+    try {
+      console.log("Creating appointment with data:", insertAppointment);
+      
+      const id = this.appointmentId++;
+      const now = new Date();
+      
+      // Make sure date is a proper Date object
+      let date = insertAppointment.date;
+      if (typeof date === 'string') {
+        date = new Date(date);
+      }
+      
+      const appointment: Appointment = { 
+        ...insertAppointment, 
+        id, 
+        date, // Ensure date is a Date object
+        createdAt: now 
+      };
+      
+      console.log("Created appointment object:", appointment);
+      
+      this.appointments.set(id, appointment);
+      return appointment;
+    } catch (error) {
+      console.error("Error in createAppointment:", error);
+      throw error;
+    }
   }
 
   async updateAppointment(id: number, appointment: Partial<Appointment>): Promise<Appointment | undefined> {
@@ -269,8 +332,11 @@ export class MemStorage implements IStorage {
 
   // Helper to seed some initial agents
   // Seed sample property data
+  // Modified version of the seedProperties function in server/storage.ts
+
   private seedProperties(userId: number) {
     const propertyData: InsertProperty[] = [
+      // Original properties
       {
         title: "Modern Luxury Villa",
         description: "Elegant modern villa with panoramic views, this stunning 4-bedroom home features high ceilings, floor-to-ceiling windows, and premium finishes throughout. The open-concept living space flows to a private backyard with a pool. Includes smart home technology, designer kitchen with high-end appliances, and a luxurious primary suite.",
@@ -408,6 +474,158 @@ export class MemStorage implements IStorage {
         status: "available",
         avgRating: "4.6",
         ratingCount: 11
+      },
+      
+      // NEW PROPERTIES ADDED BELOW
+      
+      // Property 7: Mountain Retreat
+      {
+        title: "Mountain Retreat with Panoramic Views",
+        description: "Escape to this stunning mountain retreat offering breathtaking panoramic views of the surrounding landscape. This 4-bedroom, 3-bathroom home features vaulted ceilings, a stone fireplace, and floor-to-ceiling windows to take in the natural beauty. The gourmet kitchen opens to a spacious deck perfect for outdoor entertaining. Includes a hot tub, game room, and access to hiking trails.",
+        price: "925000",
+        address: "345 Summit Ridge Road",
+        city: "Aspen",
+        state: "CO",
+        zipCode: "81611",
+        lat: "39.1911",
+        lng: "-106.8175",
+        bedrooms: 4,
+        bathrooms: 3,
+        squareFeet: 2800,
+        yearBuilt: 2016,
+        propertyType: "House",
+        listingType: "buy",
+        imageUrl: "https://images.unsplash.com/photo-1505843513577-22bb7d21e455?w=800&auto=format&fit=crop",
+        userId: 1,
+        featured: true,
+        status: "new",
+        avgRating: "4.9",
+        ratingCount: 7
+      },
+      
+      // Property 8: Urban Loft
+      {
+        title: "Industrial Chic Urban Loft",
+        description: "Stunning converted warehouse loft in a trendy downtown district. This unique 1-bedroom space features 15-foot ceilings, exposed brick walls, original timber beams, and polished concrete floors. The open-concept layout includes a chef's kitchen with premium appliances, custom cabinetry, and a spacious island. Building amenities include secure entry, communal workspace, and rooftop garden.",
+        price: "2100",
+        address: "788 Warehouse District",
+        city: "Chicago",
+        state: "IL",
+        zipCode: "60607",
+        lat: "41.8781",
+        lng: "-87.6298",
+        bedrooms: 1,
+        bathrooms: 1.5,
+        squareFeet: 1150,
+        yearBuilt: 1925,
+        propertyType: "Loft",
+        listingType: "rent",
+        imageUrl: "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?w=800&auto=format&fit=crop",
+        userId: 1,
+        featured: false,
+        status: "available",
+        avgRating: "4.4",
+        ratingCount: 5
+      },
+      
+      // Property 9: Beachfront Cottage
+      {
+        title: "Charming Beachfront Cottage",
+        description: "Adorable beachfront cottage just steps from the sand. This completely renovated 2-bedroom, 1-bathroom home offers the perfect beach getaway with modern amenities while maintaining its coastal charm. Features include a bright, airy interior, updated kitchen, outdoor shower, and a spacious deck with unobstructed ocean views. Enjoy stunning sunsets and the sound of waves from your living room.",
+        price: "3800",
+        address: "214 Shoreline Drive",
+        city: "Santa Cruz",
+        state: "CA",
+        zipCode: "95060",
+        lat: "36.9741",
+        lng: "-122.0308",
+        bedrooms: 2,
+        bathrooms: 1,
+        squareFeet: 950,
+        yearBuilt: 1960,
+        propertyType: "House",
+        listingType: "rent",
+        imageUrl: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=800&auto=format&fit=crop",
+        userId: 1,
+        featured: true,
+        status: "available",
+        avgRating: "4.7",
+        ratingCount: 14
+      },
+      
+      // Property 10: Smart Tiny Home
+      {
+        title: "Eco-Friendly Smart Tiny Home",
+        description: "Experience minimalist luxury in this state-of-the-art tiny home. Despite its compact footprint, this innovative space includes a full kitchen with high-end appliances, a comfortable sleeping loft, and a surprisingly spacious bathroom. Features include solar panels, rainwater collection system, smart home technology, and multi-functional furniture. Perfect for environmentally conscious individuals looking to reduce their carbon footprint without sacrificing comfort.",
+        price: "175000",
+        address: "55 Sustainable Way",
+        city: "Seattle",
+        state: "WA",
+        zipCode: "98116",
+        lat: "47.6062",
+        lng: "-122.3321",
+        bedrooms: 1,
+        bathrooms: 1,
+        squareFeet: 400,
+        yearBuilt: 2023,
+        propertyType: "Tiny Home",
+        listingType: "buy",
+        imageUrl: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&auto=format&fit=crop",
+        userId: 1,
+        featured: false,
+        status: "new",
+        avgRating: "4.3",
+        ratingCount: 3
+      },
+      
+      // Property 11: Mediterranean Villa
+      {
+        title: "Luxurious Mediterranean Villa with Pool",
+        description: "Exquisite Mediterranean-inspired villa in an exclusive gated community. This 5-bedroom, 4.5-bathroom estate features soaring ceilings, marble floors, and custom woodwork throughout. The chef's kitchen includes top-of-the-line appliances, a wine refrigerator, and opens to a family room with French doors leading to the backyard oasis. The resort-style backyard offers a sparkling pool with waterfall features, a built-in BBQ area, and a covered patio perfect for entertaining.",
+        price: "1850000",
+        address: "1024 Palazzo Avenue",
+        city: "Scottsdale",
+        state: "AZ",
+        zipCode: "85255",
+        lat: "33.4942",
+        lng: "-111.9261",
+        bedrooms: 5,
+        bathrooms: 4.5,
+        squareFeet: 4200,
+        yearBuilt: 2012,
+        propertyType: "House",
+        listingType: "buy",
+        imageUrl: "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800&auto=format&fit=crop",
+        userId: 1,
+        featured: true,
+        status: "open_house",
+        avgRating: "4.9",
+        ratingCount: 17
+      },
+      
+      // Property 12: Modern Penthouse
+      {
+        title: "Sleek Modern Penthouse with City Views",
+        description: "Live above it all in this spectacular penthouse apartment offering breathtaking skyline views from every room. This 3-bedroom, 3-bathroom luxury residence features floor-to-ceiling windows, designer finishes, and an open-concept living space perfect for entertaining. The gourmet kitchen includes custom cabinetry, quartz countertops, and high-end appliances. Residents enjoy premium building amenities including 24-hour concierge, state-of-the-art fitness center, infinity pool, and private wine storage.",
+        price: "5500",
+        address: "900 Metropolitan Avenue, PH3",
+        city: "New York",
+        state: "NY",
+        zipCode: "10001",
+        lat: "40.7128",
+        lng: "-74.0060",
+        bedrooms: 3,
+        bathrooms: 3,
+        squareFeet: 2200,
+        yearBuilt: 2019,
+        propertyType: "Penthouse",
+        listingType: "rent",
+        imageUrl: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&auto=format&fit=crop",
+        userId: 1,
+        featured: true,
+        status: "available",
+        avgRating: "4.8",
+        ratingCount: 10
       }
     ];
 

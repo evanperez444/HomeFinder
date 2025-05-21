@@ -72,7 +72,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.post('/api/auth/register', async (req: Request, res: Response) => {
     try {
-      const userData = insertUserSchema.parse(req.body);
+      // Add logging to diagnose the issue
+      console.log("Registration attempt with data:", req.body);
+      
+      // Modified to handle savedProperties explicitly
+      const userData = {
+        username: req.body.username,
+        password: req.body.password,
+        email: req.body.email,
+        fullName: req.body.fullName,
+        savedProperties: "[]" // Explicitly set this as a string containing empty JSON array
+      };
       
       // Check if username or email already exists
       const existingUser = await storage.getUserByUsername(userData.username);
@@ -85,9 +95,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Email already exists' });
       }
       
-      // In a real application, hash the password
-      // userData.password = await bcrypt.hash(userData.password, 10);
+      console.log("Creating user with data:", userData);
       
+      // Create the user
       const user = await storage.createUser(userData);
       
       // Exclude password from response
@@ -95,15 +105,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       req.login(user, (err) => {
         if (err) {
+          console.error("Login error after registration:", err);
           return res.status(500).json({ message: 'Login failed after registration' });
         }
         return res.status(201).json(userWithoutPassword);
       });
     } catch (error) {
+      // Improved error logging
+      console.error("Registration error:", error);
+      
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: 'Invalid input', errors: error.errors });
       }
-      return res.status(500).json({ message: 'Registration failed' });
+      return res.status(500).json({ message: 'Registration failed', error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
@@ -199,24 +213,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update the properties route in server/routes.ts to handle the type conversions
   app.post('/api/properties', async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: 'Authentication required' });
     }
     
     try {
-      const propertyData = insertPropertySchema.parse(req.body);
-      const user = req.user as any;
+      console.log("Property creation request data:", req.body);
       
-      propertyData.userId = user.id;
+      // Pre-process the data to match schema expectations
+      const propertyData = {
+        ...req.body,
+        // Make sure these are strings
+        price: String(req.body.price),
+        lat: String(req.body.lat),
+        lng: String(req.body.lng),
+        // Make sure user ID is included from authenticated user
+        userId: (req.user as any).id
+      };
       
-      const property = await storage.createProperty(propertyData);
+      console.log("Processed property data:", propertyData);
+      
+      // Validate with the schema
+      const validatedData = insertPropertySchema.parse(propertyData);
+      
+      const property = await storage.createProperty(validatedData);
       return res.status(201).json(property);
     } catch (error) {
+      console.error("Property creation error:", error);
+      
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: 'Invalid input', errors: error.errors });
       }
-      return res.status(500).json({ message: 'Failed to create property' });
+      return res.status(500).json({ 
+        message: 'Failed to create property', 
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
@@ -293,18 +326,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     try {
-      const appointmentData = insertAppointmentSchema.parse(req.body);
-      const user = req.user as any;
+      console.log("Appointment request data:", req.body);
       
+      // Parse the date string into a Date object if it's a string
+      let appointmentData = { ...req.body };
+      if (typeof appointmentData.date === 'string') {
+        appointmentData.date = new Date(appointmentData.date);
+      }
+      
+      // Ensure userId is set from authenticated user
+      const user = req.user as any;
       appointmentData.userId = user.id;
       
-      const appointment = await storage.createAppointment(appointmentData);
+      console.log("Processed appointment data:", appointmentData);
+      
+      // Now validate with zod
+      const validatedData = insertAppointmentSchema.parse(appointmentData);
+      
+      const appointment = await storage.createAppointment(validatedData);
       return res.status(201).json(appointment);
     } catch (error) {
+      console.error("Appointment creation error:", error);
+      
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: 'Invalid input', errors: error.errors });
       }
-      return res.status(500).json({ message: 'Failed to create appointment' });
+      return res.status(500).json({ 
+        message: 'Failed to create appointment', 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
     }
   });
 

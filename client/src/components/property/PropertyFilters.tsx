@@ -32,9 +32,17 @@ interface PropertyFiltersProps {
   onFilter: (filters: PropertyFilter) => void;
   initialFilters?: PropertyFilter;
   listingType?: string;
+  className?: string; // Add this to allow custom styling
+  compact?: boolean; // Add option for a more compact version
 }
 
-const PropertyFilters = ({ onFilter, initialFilters = {}, listingType }: PropertyFiltersProps) => {
+const PropertyFilters = ({ 
+  onFilter, 
+  initialFilters = {}, 
+  listingType,
+  className = "",
+  compact = false
+}: PropertyFiltersProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const defaultValues: PropertyFilter = {
@@ -65,8 +73,63 @@ const PropertyFilters = ({ onFilter, initialFilters = {}, listingType }: Propert
     onFilter(defaultValues);
   };
 
+  // If compact is true, render the simplified version for homepage
+  if (compact) {
+    return (
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className={className}>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <FormField
+              control={form.control}
+              name="city"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input placeholder="Any City" {...field} className="h-12 border-gray-300 text-gray-900" />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="minPrice"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input placeholder="Min Price" type="number" {...field} className="h-12 border-gray-300 text-gray-900" />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="maxPrice"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input placeholder="Max Price" type="number" {...field} className="h-12 border-gray-300 text-gray-900" />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <Button 
+              type="submit" 
+              className="h-12 w-full md:w-auto bg-primary text-white hover:bg-blue-600"
+            >
+              Search
+            </Button>
+          </div>
+        </form>
+      </Form>
+    );
+  }
+
+  // Otherwise, render the full filter component
   return (
-    <div className="bg-white dark:bg-gray-950 p-4 md:p-6 rounded-lg shadow-md mb-6">
+    <div className={`bg-white dark:bg-gray-950 p-4 md:p-6 rounded-lg shadow-md mb-6 ${className}`}>
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold">Filter Properties</h3>
         <Button 
@@ -89,7 +152,7 @@ const PropertyFilters = ({ onFilter, initialFilters = {}, listingType }: Propert
                 <FormItem>
                   <FormLabel>City</FormLabel>
                   <FormControl>
-                    <Input placeholder="Any City" {...field} />
+                    <Input placeholder="Any City" {...field} className="border-gray-300 text-gray-900" />
                   </FormControl>
                 </FormItem>
               )}
@@ -102,7 +165,7 @@ const PropertyFilters = ({ onFilter, initialFilters = {}, listingType }: Propert
                 <FormItem>
                   <FormLabel>Min Price</FormLabel>
                   <FormControl>
-                    <Input placeholder="Min Price" type="number" {...field} />
+                    <Input placeholder="Min Price" type="number" {...field} className="border-gray-300 text-gray-900" />
                   </FormControl>
                 </FormItem>
               )}
@@ -115,7 +178,7 @@ const PropertyFilters = ({ onFilter, initialFilters = {}, listingType }: Propert
                 <FormItem>
                   <FormLabel>Max Price</FormLabel>
                   <FormControl>
-                    <Input placeholder="Max Price" type="number" {...field} />
+                    <Input placeholder="Max Price" type="number" {...field} className="border-gray-300 text-gray-900" />
                   </FormControl>
                 </FormItem>
               )}
@@ -132,7 +195,7 @@ const PropertyFilters = ({ onFilter, initialFilters = {}, listingType }: Propert
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="border-gray-300 text-gray-900">
                         <SelectValue placeholder="Any" />
                       </SelectTrigger>
                     </FormControl>
@@ -160,7 +223,7 @@ const PropertyFilters = ({ onFilter, initialFilters = {}, listingType }: Propert
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="border-gray-300">
                         <SelectValue placeholder="Any" />
                       </SelectTrigger>
                     </FormControl>
@@ -187,7 +250,7 @@ const PropertyFilters = ({ onFilter, initialFilters = {}, listingType }: Propert
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="border-gray-300">
                         <SelectValue placeholder="Any Type" />
                       </SelectTrigger>
                     </FormControl>
@@ -214,7 +277,7 @@ const PropertyFilters = ({ onFilter, initialFilters = {}, listingType }: Propert
                     <FormItem>
                       <FormLabel>Min Sq. Ft.</FormLabel>
                       <FormControl>
-                        <Input placeholder="Min Sq. Ft." type="number" {...field} />
+                        <Input placeholder="Min Sq. Ft." type="number" {...field} className="border-gray-300 text-gray-900" />
                       </FormControl>
                     </FormItem>
                   )}
@@ -227,7 +290,7 @@ const PropertyFilters = ({ onFilter, initialFilters = {}, listingType }: Propert
                     <FormItem>
                       <FormLabel>Max Sq. Ft.</FormLabel>
                       <FormControl>
-                        <Input placeholder="Max Sq. Ft." type="number" {...field} />
+                        <Input placeholder="Max Sq. Ft." type="number" {...field} className="border-gray-300 text-gray-900" />
                       </FormControl>
                     </FormItem>
                   )}
@@ -240,7 +303,7 @@ const PropertyFilters = ({ onFilter, initialFilters = {}, listingType }: Propert
                     <FormItem>
                       <FormLabel>Year Built (Min)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Min Year" type="number" {...field} />
+                        <Input placeholder="Min Year" type="number" {...field} className="border-gray-300 text-gray-900" />
                       </FormControl>
                     </FormItem>
                   )}
@@ -253,7 +316,7 @@ const PropertyFilters = ({ onFilter, initialFilters = {}, listingType }: Propert
                     <FormItem>
                       <FormLabel>Year Built (Max)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Max Year" type="number" {...field} />
+                        <Input placeholder="Max Year" type="number" {...field} className="border-gray-300 text-gray-900" />
                       </FormControl>
                     </FormItem>
                   )}
@@ -267,10 +330,11 @@ const PropertyFilters = ({ onFilter, initialFilters = {}, listingType }: Propert
               type="button" 
               variant="outline" 
               onClick={handleReset}
+              className="border-gray-300"
             >
               Reset
             </Button>
-            <Button type="submit">
+            <Button type="submit" className="bg-primary text-white hover:bg-blue-600">
               Apply Filters
             </Button>
           </div>
